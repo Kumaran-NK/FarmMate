@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   CloudRain,
   Thermometer,
-  Wind
+  Wind,
+  FileText
 } from 'lucide-react';
 import { useFarmContext } from '../context/FarmContext';
 import { api } from '../services/api';
@@ -24,9 +25,34 @@ import { InteractiveMap } from '../components/InteractiveMap';
 import { WeatherBackground } from '../components/WeatherBackground';
 
 export const Dashboard: React.FC = () => {
-  const { location, t, setLatestWeather } = useFarmContext();
+  const { location, t, setLatestWeather, latestCropPrediction } = useFarmContext();
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null);
   const [loadingWeather, setLoadingWeather] = useState<boolean>(true);
+  const [downloadingPdf, setDownloadingPdf] = useState<boolean>(false);
+
+  const handleExportPdf = async () => {
+    setDownloadingPdf(true);
+    try {
+      await api.downloadPdfReport({
+        city: location.city,
+        state: location.state,
+        n: 90,
+        p: 42,
+        k: 43,
+        ph: 6.5,
+        rainfall: 1200,
+        recommended_crop: latestCropPrediction?.predicted_crop || 'Rice',
+        confidence: latestCropPrediction ? (latestCropPrediction.probability * 100).toFixed(1) : 94.5,
+        temp: weatherData?.current_weather.temp || 28,
+        rain_prob: weatherData?.rain_prediction.probability ? `${(weatherData.rain_prediction.probability * 100).toFixed(0)}%` : '20%',
+        et0: '4.8'
+      });
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -82,6 +108,15 @@ export const Dashboard: React.FC = () => {
               <Bot className="w-4 h-4 text-emerald-400" />
               <span>{t('askAi')}</span>
             </NavLink>
+
+            <button
+              onClick={handleExportPdf}
+              disabled={downloadingPdf}
+              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all backdrop-blur-md disabled:opacity-50"
+            >
+              <FileText className="w-4 h-4 text-emerald-400" />
+              <span>{downloadingPdf ? 'Generating PDF...' : 'Export PDF Report'}</span>
+            </button>
           </div>
         </div>
       </WeatherBackground>

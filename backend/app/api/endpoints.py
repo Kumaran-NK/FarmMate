@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import StreamingResponse
+from farmmate.services.pdf_service import pdf_service
 from dotenv import load_dotenv
 
 # Ensure src is in python path
@@ -22,6 +24,7 @@ from farmmate.services.frost_service import frost_service
 from farmmate.services.weather_service import weather_service
 from farmmate.services.yield_service import yield_service
 from farmmate.services.price_service import price_service
+from farmmate.utils.cache import cache_manager
 
 from backend.app.schemas.requests import (
     CropRecommendRequest,
@@ -84,6 +87,11 @@ async def predict_yield(req: YieldPredictRequest) -> Dict[str, Any]:
 @router.post("/market/predict")
 async def predict_market_price(req: MarketPredictRequest) -> Dict[str, Any]:
     try:
+        cache_key = f"market:{req.vegetable.lower()}:{req.state.lower()}:{req.market.lower()}:{req.month}"
+        cached = await cache_manager.get_json(cache_key)
+        if cached:
+            return {"status": "success", "data": cached, "cached": True}
+
         result = price_service.predict_price(
             vegetable=req.vegetable,
             state=req.state,
@@ -94,7 +102,8 @@ async def predict_market_price(req: MarketPredictRequest) -> Dict[str, Any]:
             condition=req.condition,
             baseline_demand=req.baseline_demand
         )
-        return {"status": "success", "data": result}
+        await cache_manager.set_json(cache_key, result, ttl_seconds=3600)
+        return {"status": "success", "data": result, "cached": False}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Market price prediction failed: {str(e)}")
 
@@ -104,8 +113,14 @@ async def predict_market_price(req: MarketPredictRequest) -> Dict[str, Any]:
 @router.post("/weather/predict")
 async def predict_weather(req: WeatherPredictRequest) -> Dict[str, Any]:
     try:
+        cache_key = f"weather:{req.city_name.lower().strip()}"
+        cached = await cache_manager.get_json(cache_key)
+        if cached:
+            return {"status": "success", "data": cached, "cached": True}
+
         result = weather_service.predict_weather(city_name=req.city_name)
-        return {"status": "success", "data": result}
+        await cache_manager.set_json(cache_key, result, ttl_seconds=900)
+        return {"status": "success", "data": result, "cached": False}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Weather forecast failed: {str(e)}")
 
@@ -131,6 +146,22 @@ async def calculate_et0(req: ET0CalculateRequest) -> Dict[str, Any]:
         return {"status": "success", "data": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"ET0 calculation failed: {str(e)}")
+
+# ------------------------------------------------------------------------------
+# EXECUTIVE PDF ADVISORY REPORT ENDPOINT
+# ------------------------------------------------------------------------------
+@router.post("/report/pdf")
+async def generate_pdf_report(payload: Dict[str, Any]):
+    try:
+        import io
+        pdf_bytes = pdf_service.generate_advisory_pdf(payload)
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={"Content-Disposition": "attachment; filename=FarmMate_Advisory_Report.pdf"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF report generation failed: {str(e)}")
 
 # ------------------------------------------------------------------------------
 # GROQ-POWERED AI ASSISTANT ENDPOINT

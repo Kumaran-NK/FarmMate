@@ -228,6 +228,18 @@ export const api = {
     } catch (err) {
       return {};
     }
+  },
+
+  // Export Executive PDF Advisory Report
+  downloadPdfReport: async (payload: Record<string, any>): Promise<void> => {
+    const res = await apiClient.post('/report/pdf', payload, { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `FarmMate_Advisory_Report_${payload.city || 'Farm'}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 };
 
