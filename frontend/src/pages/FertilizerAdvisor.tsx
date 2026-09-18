@@ -100,6 +100,7 @@ export const FertilizerAdvisor: React.FC = () => {
                   <label className="block text-[11px] text-slate-400 mb-1">Nitrogen (N)</label>
                   <input
                     type="number"
+                    step="any"
                     value={n}
                     onChange={(e) => setN(Number(e.target.value))}
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
@@ -109,6 +110,7 @@ export const FertilizerAdvisor: React.FC = () => {
                   <label className="block text-[11px] text-slate-400 mb-1">Phosphorus (P)</label>
                   <input
                     type="number"
+                    step="any"
                     value={p}
                     onChange={(e) => setP(Number(e.target.value))}
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
@@ -118,6 +120,7 @@ export const FertilizerAdvisor: React.FC = () => {
                   <label className="block text-[11px] text-slate-400 mb-1">Potassium (K)</label>
                   <input
                     type="number"
+                    step="any"
                     value={k}
                     onChange={(e) => setK(Number(e.target.value))}
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white"

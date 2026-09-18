@@ -21,6 +21,7 @@ import type { WeatherResponse } from '../types';
 import { MetricCard } from '../components/MetricCard';
 import { AlertBanner } from '../components/AlertBanner';
 import { InteractiveMap } from '../components/InteractiveMap';
+import { WeatherBackground } from '../components/WeatherBackground';
 
 export const Dashboard: React.FC = () => {
   const { location, t, setLatestWeather } = useFarmContext();
@@ -48,22 +49,20 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-8 pb-12">
       
-      {/* Hero Welcome Banner */}
-      <div className="relative rounded-3xl bg-gradient-to-r from-emerald-950/80 via-slate-900 to-teal-950/80 border border-emerald-500/30 p-6 sm:p-8 shadow-2xl overflow-hidden backdrop-blur-md">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        
+      {/* Hero Welcome Banner with Dynamic 2D Weather Scene */}
+      <WeatherBackground heightClass="min-h-[280px]">
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold mb-4">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold mb-4 backdrop-blur-md">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>FarmMate Agronomic Intelligence Engine</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight drop-shadow-md">
             Smart Decision Support for Modern Agriculture
           </h1>
 
-          <p className="text-slate-300 text-sm mt-3 leading-relaxed">
-            Real-time weather telemetry, machine learning crop advisories, FAO-56 irrigation planning, market forecasting, and Groq-powered AI assistance for <b>{location.city}, {location.state}</b>.
+          <p className="text-slate-200 text-sm mt-3 leading-relaxed drop-shadow">
+            Real-time weather telemetry, machine learning crop advisories, FAO-56 irrigation planning, market forecasting, and AI assistance for <b>{location.city}, {location.state}</b>.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
@@ -78,14 +77,14 @@ export const Dashboard: React.FC = () => {
 
             <NavLink
               to="/ai-assistant"
-              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-200 text-xs font-bold transition-all"
+              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-200 text-xs font-bold transition-all backdrop-blur-md"
             >
               <Bot className="w-4 h-4 text-emerald-400" />
               <span>{t('askAi')}</span>
             </NavLink>
           </div>
         </div>
-      </div>
+      </WeatherBackground>
 
       {/* Active Farm Alerts & Health Advisories */}
       <div className="space-y-3">

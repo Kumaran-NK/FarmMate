@@ -87,7 +87,7 @@ export const AIAssistant: React.FC = () => {
         <div>
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold mb-1">
             <Bot className="w-3.5 h-3.5" />
-            <span>Groq Llama-3.3 70B Conversational Engine</span>
+            <span>FarmMate AI Engine</span>
           </div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">FarmMate AI Assistant</h1>
         </div>

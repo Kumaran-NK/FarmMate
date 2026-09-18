@@ -148,7 +148,7 @@ Create a `.env` file in the root project directory:
 OPENWEATHER_API_KEY=openweather_api_key
 
 # Groq API Key (Sign up at https://console.groq.com)
-GROQ_API_KEY=your_groq_api_key_here
+GROQ_API_KEY= your_groq_api_key_here
 
 # Application Settings
 ENVIRONMENT=development

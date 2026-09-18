@@ -137,12 +137,23 @@ async def calculate_et0(req: ET0CalculateRequest) -> Dict[str, Any]:
 # ------------------------------------------------------------------------------
 @router.post("/chat")
 async def chat_assistant(req: ChatMessageRequest) -> Dict[str, Any]:
+    import logging
+    logger = logging.getLogger("farmmate.chat")
+
     groq_api_key = os.getenv("GROQ_API_KEY")
     if not groq_api_key or groq_api_key == "your_groq_api_key_here":
+        logger.warning("GROQ_API_KEY not configured — returning break status")
         return {
-            "status": "error",
-            "reply": "Groq API key is not configured on the backend server. Please set GROQ_API_KEY in your .env file."
+            "status": "break",
+            "reply": "Our farming assistant is taking a short break. Your crop, weather, fertilizer and irrigation tools are still available."
         }
+
+    # Free-tier Groq model options in preference order
+    env_model = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b").strip()
+    candidate_models = [env_model, "qwen/qwen3.8-27b", "groq/compound-mini", "allam-2-7b"]
+    # De-duplicate preserving order
+    seen = set()
+    models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
 
     try:
         import groq
@@ -156,36 +167,47 @@ async def chat_assistant(req: ChatMessageRequest) -> Dict[str, Any]:
             "Keep your responses structured, clear, and actionable for real-world farming. Avoid technical ML jargon unless requested."
         )
 
-        # Append farm context if present
         if req.context:
             context_str = "\n".join([f"- {k}: {v}" for k, v in req.context.items() if v])
             system_prompt += f"\n\nCURRENT FARM CONTEXT:\n{context_str}"
 
         messages = [{"role": "system", "content": system_prompt}]
-        
-        # Append history
-        for msg in req.history[-6:]:  # Keep last 6 messages
+        for msg in req.history[-6:]:
             messages.append({"role": msg.role, "content": msg.content})
-
-        # Append user message
         messages.append({"role": "user", "content": req.message})
 
-        completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=messages,
-            temperature=0.7,
-            max_tokens=800
-        )
+        reply_text = None
+        last_error = None
+        for model_name in models_to_try:
+            try:
+                completion = client.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    temperature=0.7,
+                    max_tokens=800
+                )
+                reply_text = completion.choices[0].message.content
+                logger.info(f"Groq model '{model_name}' responded successfully")
+                break
+            except Exception as err:
+                last_error = err
+                logger.warning(f"Groq model '{model_name}' failed: {err}")
+                continue
 
-        reply_text = completion.choices[0].message.content
-        return {"status": "success", "reply": reply_text}
+        if reply_text:
+            return {"status": "success", "reply": reply_text}
+        else:
+            logger.error(f"All Groq models exhausted. Last error: {last_error}")
+            return {
+                "status": "break",
+                "reply": "Our farming assistant is taking a short break. Your crop, weather, fertilizer and irrigation tools are still available."
+            }
 
     except Exception as e:
-        print(f"Groq Chatbot Error: {e}")
-        # Fallback response for offline or API errors
+        logger.error(f"Groq Chatbot Execution Error: {e}")
         return {
-            "status": "fallback",
-            "reply": f"FarmMate AI is temporarily operating in offline fallback mode. (Details: {str(e)})"
+            "status": "break",
+            "reply": "Our farming assistant is taking a short break. Your crop, weather, fertilizer and irrigation tools are still available."
         }
 
 # ------------------------------------------------------------------------------

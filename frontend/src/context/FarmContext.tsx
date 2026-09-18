@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { CropRecommendation, WeatherResponse } from '../types';
+import type { WeatherCondition } from '../components/FarmScene';
 
 export interface LocationState {
   city: string;
@@ -20,6 +21,7 @@ interface FarmContextType {
   setLatestCropPrediction: (crop: CropRecommendation | null) => void;
   latestWeather: WeatherResponse | null;
   setLatestWeather: (weather: WeatherResponse | null) => void;
+  weatherCondition: WeatherCondition;
   t: (key: string) => string;
 }
 
@@ -77,6 +79,18 @@ const TRANSLATIONS: Record<Language, Record<string, string>> = {
   }
 };
 
+export const parseWeatherCondition = (desc?: string, temp?: number): WeatherCondition => {
+  if (temp !== undefined && temp <= 2) return 'frost';
+  if (!desc) return 'sunny';
+  const lower = desc.toLowerCase();
+  if (lower.includes('thunder') || lower.includes('storm')) return 'storm';
+  if (lower.includes('rain') || lower.includes('drizzle') || lower.includes('shower')) return 'rain';
+  if (lower.includes('fog') || lower.includes('mist') || lower.includes('haze')) return 'fog';
+  if (lower.includes('cloud') || lower.includes('overcast')) return 'cloudy';
+  if (lower.includes('clear') || lower.includes('sun')) return 'sunny';
+  return 'sunny';
+};
+
 const FarmContext = createContext<FarmContextType | undefined>(undefined);
 
 export const FarmProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -84,6 +98,11 @@ export const FarmProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [language, setLanguage] = useState<Language>('en');
   const [latestCropPrediction, setLatestCropPrediction] = useState<CropRecommendation | null>(null);
   const [latestWeather, setLatestWeather] = useState<WeatherResponse | null>(null);
+
+  const weatherCondition: WeatherCondition = parseWeatherCondition(
+    latestWeather?.current_weather.description,
+    latestWeather?.current_weather.temp
+  );
 
   const t = (key: string): string => {
     return TRANSLATIONS[language]?.[key] || TRANSLATIONS['en'][key] || key;
@@ -100,6 +119,7 @@ export const FarmProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setLatestCropPrediction,
         latestWeather,
         setLatestWeather,
+        weatherCondition,
         t
       }}
     >

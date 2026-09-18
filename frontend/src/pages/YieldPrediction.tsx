@@ -75,9 +75,9 @@ export const YieldPredictionPage: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 mb-1">Cultivation Area (Hectares)</label>
               <input
                 type="number"
+                step="any"
                 min="0.1"
                 max="10000"
-                step="0.5"
                 value={areaHa}
                 onChange={(e) => setAreaHa(Number(e.target.value))}
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
@@ -92,9 +92,9 @@ export const YieldPredictionPage: React.FC = () => {
                 </div>
                 <input
                   type="number"
+                  step="any"
                   min="50"
                   max="4000"
-                  step="50"
                   value={rainfall}
                   onChange={(e) => setRainfall(Number(e.target.value))}
                   className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
@@ -108,9 +108,9 @@ export const YieldPredictionPage: React.FC = () => {
                 </div>
                 <input
                   type="number"
+                  step="any"
                   min="0"
                   max="500"
-                  step="0.5"
                   value={pesticides}
                   onChange={(e) => setPesticides(Number(e.target.value))}
                   className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"

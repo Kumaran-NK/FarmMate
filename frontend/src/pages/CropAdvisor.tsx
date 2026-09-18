@@ -4,6 +4,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 
 import { api } from '../services/api';
 import type { CropRecommendation } from '../types';
 import { useFarmContext } from '../context/FarmContext';
+import { SmartImage } from '../components/SmartImage';
 
 const CROP_IMAGES: Record<string, string> = {
   Rice: 'https://images.unsplash.com/photo-1536637175371-cc52b364817a?q=80&w=800&auto=format&fit=crop',
@@ -219,6 +220,7 @@ export const CropAdvisor: React.FC = () => {
               </div>
               <input
                 type="number"
+                step="any"
                 min="10"
                 max="3500"
                 value={rainfall}
@@ -300,9 +302,10 @@ export const CropAdvisor: React.FC = () => {
               {/* Main Crop Card */}
               <div className="rounded-3xl bg-slate-900/90 border border-emerald-500/40 overflow-hidden shadow-2xl backdrop-blur-md">
                 <div className="relative h-48 sm:h-56 overflow-hidden">
-                  <img
+                  <SmartImage
                     src={cropImg}
                     alt={cropName}
+                    fallbackType="crop"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
