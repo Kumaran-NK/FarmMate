@@ -54,47 +54,6 @@ The platform is designed with a high-performance **FastAPI** REST backend, an **
 
 ---
 
-## 📸 Visual Showcase
-
-<div align="center">
-
-<table>
-<tr>
-<td width="50%">
-
-### 🌾 Crop Advisor & ML Soil Analysis
-<img src="./docs/assets/crop_advisor_ui.png" alt="Crop Advisor UI" width="100%"/>
-<p align="center"><i>Input NPK, pH & rainfall to receive top 5 crop recommendations with match confidence.</i></p>
-
-</td>
-<td width="50%">
-
-### 🤖 FarmMate AI Assistant
-<img src="./docs/assets/farmmate_ai_ui.png" alt="FarmMate AI Assistant" width="100%"/>
-<p align="center"><i>Conversational agricultural assistant powered by Groq supporting English & Tamil queries.</i></p>
-
-</td>
-</tr>
-
-<tr>
-<td width="50%">
-
-### 📈 Agronomic Feature Importance
-<img src="./docs/assets/feature_importance.png" alt="Feature Importance" width="100%"/>
-<p align="center"><i>Random Forest feature contribution weights for soil nutrients and climate parameters.</i></p>
-
-</td>
-<td width="50%">
-
-### ❄️ Frost Risk Regional Analytics
-<img src="./docs/assets/frost_probability_by_region.png" alt="Frost Probability" width="100%"/>
-<p align="center"><i>Regional frost probability assessment for 20 Indian agricultural regions.</i></p>
-
-</td>
-</tr>
-</table>
-
-</div>
 
 ---
 
