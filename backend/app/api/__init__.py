@@ -1,0 +1,3 @@
+"""
+FarmMate API Endpoints Package
+"""
