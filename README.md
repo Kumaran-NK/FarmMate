@@ -54,6 +54,47 @@ The platform is designed with a high-performance **FastAPI** REST backend, an **
 
 ---
 
+## 📸 Visual Showcase
+
+<div align="center">
+
+<table>
+<tr>
+<td width="50%">
+
+### 🌾 Main Dashboard & Telemetry
+<img src="./images/Dashboard.png" alt="Main Dashboard" width="100%"/>
+<p align="center"><i>Comprehensive farm overview with real-time weather and crop insights.</i></p>
+
+</td>
+<td width="50%">
+
+### 🤖 FarmMate AI Assistant
+<img src="./images/Ai.png" alt="FarmMate AI Assistant" width="100%"/>
+<p align="center"><i>Conversational agricultural assistant powered by Groq supporting English & Tamil queries.</i></p>
+
+</td>
+</tr>
+
+<tr>
+<td width="50%">
+
+### 🗺️ Interactive GIS Map
+<img src="./images/Map.png" alt="Interactive Map" width="100%"/>
+<p align="center"><i>Integrated spatial map for precise farm location selection and regional monitoring.</i></p>
+
+</td>
+<td width="50%">
+
+### 📈 Agronomic Modules
+<img src="./images/Modules.png" alt="Agronomic Modules" width="100%"/>
+<p align="center"><i>Machine learning pipelines for fertilizer, water management, and crop yield predictions.</i></p>
+
+</td>
+</tr>
+</table>
+
+</div>
 
 ---
 
@@ -85,49 +126,9 @@ The platform is designed with a high-performance **FastAPI** REST backend, an **
 
 FarmMate follows a decoupled micro-architecture designed for performance, resilience, and horizontal scalability.
 
-```mermaid
-flowchart TD
-    subgraph Client["🌐 Client Tier (React 19 + TypeScript)"]
-        UI["Landing Page & Dashboard\n(Tailwind CSS v4)"]
-        State["FarmContext\n(Location, Weather State, Language)"]
-        Map["Leaflet GIS Map\n(OpenStreetMap)"]
-        Scene["FarmScene 2D Animations\n(CSS Keyframes & SVG)"]
-    end
-
-    subgraph API["⚡ API Gateway & Backend Tier (FastAPI)"]
-        Router["FastAPI REST Router (/api)"]
-        Cache["Redis Cache Manager\n(15m Weather / 1h Market TTL)"]
-        PDF["PDF Service\n(ReportLab Engine)"]
-    end
-
-    subgraph Engine["🧠 ML & Agronomic Services Tier"]
-        ONNX["ONNX Inference Engine\n(ONNX Runtime + Joblib Fallback)"]
-        CropSvc["Crop Recommendation Service"]
-        FertSvc["Fertilizer Advisory Service"]
-        YieldSvc["Yield Prediction Service"]
-        PriceSvc["Market Price Service"]
-        ET0Svc["FAO-56 ET0 Physics Engine"]
-    end
-
-    subgraph External["🔌 External Integrations"]
-        Groq["Groq AI API\n(Qwen 3.8 / Compound-Mini)"]
-        OWM["OpenWeatherMap API"]
-        RedisDB[(Redis Cache DB)]
-        ModelStore[(Model Artifacts .pkl / .onnx)]
-    end
-
-    UI --> Router
-    State --> Map
-    UI --> Scene
-    Router --> Cache
-    Cache <--> RedisDB
-    Router --> PDF
-    Router --> Engine
-    Engine --> ONNX
-    ONNX <--> ModelStore
-    Router --> Groq
-    Engine --> OWM
-```
+<div align="center">
+  <img src="./images/architecture.svg" alt="System Architecture Animated" width="100%"/>
+</div>
 
 ---
 
