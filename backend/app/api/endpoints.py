@@ -164,81 +164,155 @@ async def generate_pdf_report(payload: Dict[str, Any]):
         raise HTTPException(status_code=500, detail=f"PDF report generation failed: {str(e)}")
 
 # ------------------------------------------------------------------------------
-# GROQ-POWERED AI ASSISTANT ENDPOINT
+# AI ASSISTANT ENDPOINT — Dual Provider: Groq + Gemini Fallback
 # ------------------------------------------------------------------------------
 @router.post("/chat")
 async def chat_assistant(req: ChatMessageRequest) -> Dict[str, Any]:
     import logging
+    import traceback
     logger = logging.getLogger("farmmate.chat")
 
-    groq_api_key = os.getenv("GROQ_API_KEY")
-    if not groq_api_key or groq_api_key == "your_groq_api_key_here":
-        logger.warning("GROQ_API_KEY not configured — returning break status")
+    groq_api_key = os.getenv("GROQ_API_KEY", "").strip()
+    gemini_api_key = os.getenv("GEMINI_API_KEY", "").strip()
+
+    has_groq = bool(groq_api_key) and groq_api_key != "your_groq_api_key_here"
+    has_gemini = bool(gemini_api_key) and gemini_api_key != "your_gemini_api_key_here"
+
+    logger.info(f"Chat request: has_groq={has_groq}, has_gemini={has_gemini}, message='{req.message[:80]}...'")
+
+    if not has_groq and not has_gemini:
+        logger.warning("No AI API keys configured (GROQ_API_KEY / GEMINI_API_KEY)")
         return {
             "status": "break",
-            "reply": "Our farming assistant is taking a short break. Your crop, weather, fertilizer and irrigation tools are still available."
+            "reply": "No AI provider configured. Please set GROQ_API_KEY or GEMINI_API_KEY in your .env file."
         }
 
-    # Free-tier Groq model options in preference order
-    env_model = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b").strip()
-    candidate_models = [env_model, "qwen/qwen3.8-27b", "groq/compound-mini", "allam-2-7b"]
-    # De-duplicate preserving order
-    seen = set()
-    models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
+    # Build system prompt — LLM should ALWAYS generate its own comprehensive answer
+    system_prompt = (
+        "You are FarmMate AI, an expert agricultural assistant for Indian farmers. "
+        "You have deep expertise in crop science, soil management, fertilizers, irrigation, "
+        "pest control, weather interpretation, and market pricing. "
+        "ALWAYS generate a comprehensive, helpful answer using your own agricultural knowledge. "
+        "You support English, Tamil, Hindi, and Tanglish (Tamil-English mix). "
+        "If someone asks 'Tomorrow rain varuma?', respond naturally in the same language. "
+        "Keep responses practical, structured with bullet points when helpful, and actionable. "
+        "If farm context is provided (location, active crop, weather), use it naturally in your answer."
+    )
 
+    if req.context:
+        context_str = "\n".join([f"- {k}: {v}" for k, v in req.context.items() if v])
+        system_prompt += f"\n\nCURRENT FARM CONTEXT:\n{context_str}"
+
+    # --- RAG: Retrieve supplementary agricultural knowledge ---
     try:
-        import groq
-        client = groq.Groq(api_key=groq_api_key)
-        
-        system_prompt = (
-            "You are FarmMate AI, an expert agricultural assistant designed to empower farmers and agronomists "
-            "with data-driven decision support. You speak in a helpful, respectful, and practical manner. "
-            "You support questions in English, Tamil (e.g. 'Tomorrow rain varuma?'), and other regional Indian languages. "
-            "When farm context is provided (such as active crop recommendation, location, or weather), incorporate it naturally. "
-            "Keep your responses structured, clear, and actionable for real-world farming. Avoid technical ML jargon unless requested."
-        )
+        from farmmate.services.rag_service import rag_service
+        rag_context = rag_service.build_rag_context(req.message, n_results=3)
+        if rag_context:
+            system_prompt += (
+                f"\n\n--- SUPPLEMENTARY REFERENCE DATA (use if relevant, but always give your own expert answer too) ---\n"
+                f"{rag_context}"
+            )
+            logger.info("RAG context injected as supplementary reference")
+    except Exception as rag_err:
+        logger.debug(f"RAG skipped (non-critical): {rag_err}")
 
-        if req.context:
-            context_str = "\n".join([f"- {k}: {v}" for k, v in req.context.items() if v])
-            system_prompt += f"\n\nCURRENT FARM CONTEXT:\n{context_str}"
+    # Build message history for the LLM
+    chat_messages = [{"role": "system", "content": system_prompt}]
+    for msg in req.history[-6:]:
+        chat_messages.append({"role": msg.role, "content": msg.content})
+    chat_messages.append({"role": "user", "content": req.message})
 
-        messages = [{"role": "system", "content": system_prompt}]
-        for msg in req.history[-6:]:
-            messages.append({"role": msg.role, "content": msg.content})
-        messages.append({"role": "user", "content": req.message})
+    reply_text = None
+    provider_used = None
 
-        reply_text = None
-        last_error = None
-        for model_name in models_to_try:
-            try:
-                completion = client.chat.completions.create(
-                    model=model_name,
-                    messages=messages,
-                    temperature=0.7,
-                    max_tokens=800
-                )
-                reply_text = completion.choices[0].message.content
-                logger.info(f"Groq model '{model_name}' responded successfully")
-                break
-            except Exception as err:
-                last_error = err
-                logger.warning(f"Groq model '{model_name}' failed: {err}")
-                continue
+    # --- ATTEMPT 1: Groq ---
+    if has_groq:
+        try:
+            import groq
+            client = groq.Groq(api_key=groq_api_key)
 
-        if reply_text:
-            return {"status": "success", "reply": reply_text}
-        else:
-            logger.error(f"All Groq models exhausted. Last error: {last_error}")
-            return {
-                "status": "break",
-                "reply": "Our farming assistant is taking a short break. Your crop, weather, fertilizer and irrigation tools are still available."
-            }
+            # Verified working Groq models
+            env_model = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b").strip()
+            candidate_models = [
+                env_model,
+                "openai/gpt-oss-20b",
+                "openai/gpt-oss-120b",
+                "qwen/qwen3.8-27b",
+                "allam-2-7b",
+            ]
+            # De-duplicate preserving order
+            seen = set()
+            models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
 
-    except Exception as e:
-        logger.error(f"Groq Chatbot Execution Error: {e}")
+            for model_name in models_to_try:
+                try:
+                    logger.info(f"Trying Groq model: {model_name}")
+                    completion = client.chat.completions.create(
+                        model=model_name,
+                        messages=chat_messages,
+                        temperature=0.7,
+                        max_tokens=800
+                    )
+                    reply_text = completion.choices[0].message.content
+                    provider_used = f"Groq ({model_name})"
+                    logger.info(f"✅ Groq model '{model_name}' responded successfully")
+                    break
+                except Exception as err:
+                    logger.warning(f"❌ Groq model '{model_name}' failed: {err}")
+                    continue
+
+        except ImportError:
+            logger.error("groq package not installed! Run: pip install groq")
+        except Exception as e:
+            logger.error(f"Groq provider error: {e}\n{traceback.format_exc()}")
+
+    # --- ATTEMPT 2: Google Gemini fallback ---
+    if has_gemini and not reply_text:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=gemini_api_key)
+
+            # Verified working Gemini models
+            gemini_models = ["gemini-2.5-flash", "gemini-3.8-flash", "gemini-flash-latest", "gemini-2.5-pro"]
+
+            for gm_name in gemini_models:
+                try:
+                    logger.info(f"Trying Gemini model: {gm_name}")
+                    model = genai.GenerativeModel(
+                        model_name=gm_name,
+                        system_instruction=system_prompt,
+                    )
+
+                    # Build Gemini-compatible history
+                    gemini_history = []
+                    for msg in req.history[-6:]:
+                        gemini_history.append({
+                            "role": "user" if msg.role == "user" else "model",
+                            "parts": [msg.content],
+                        })
+
+                    chat = model.start_chat(history=gemini_history)
+                    response = chat.send_message(req.message)
+                    reply_text = response.text
+                    provider_used = f"Gemini ({gm_name})"
+                    logger.info(f"✅ Gemini model '{gm_name}' responded successfully")
+                    break
+                except Exception as err:
+                    logger.warning(f"❌ Gemini model '{gm_name}' failed: {err}")
+                    continue
+
+        except ImportError:
+            logger.error("google-generativeai not installed! Run: pip install google-generativeai")
+        except Exception as e:
+            logger.error(f"Gemini provider error: {e}\n{traceback.format_exc()}")
+
+    if reply_text:
+        return {"status": "success", "reply": reply_text, "provider": provider_used}
+    else:
+        logger.error("⚠️ ALL AI providers exhausted — no response generated")
         return {
             "status": "break",
-            "reply": "Our farming assistant is taking a short break. Your crop, weather, fertilizer and irrigation tools are still available."
+            "reply": "I'm having trouble connecting to the AI service right now. Please check your API keys in the .env file and try again. Your crop, weather, fertilizer and irrigation tools are still available."
         }
 
 # ------------------------------------------------------------------------------

@@ -15,11 +15,13 @@ if str(src_path) not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.api.endpoints import router as api_router
+from backend.app.api.voice_endpoints import voice_router
+from backend.app.api.alert_endpoints import alert_router
 
 app = FastAPI(
     title="🌾 FarmMate Agricultural Intelligence API",
     description="Full-stack machine learning, weather, ET0, market price, frost prediction & Groq AI assistant endpoints.",
-    version="2.0.0",
+    version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -35,6 +37,12 @@ app.add_middleware(
 
 # Include API endpoints
 app.include_router(api_router, prefix="/api")
+
+# Include Voice & WebSocket endpoints
+app.include_router(voice_router, prefix="/api")
+
+# Include Alert & RAG management endpoints
+app.include_router(alert_router, prefix="/api")
 
 @app.get("/")
 async def root():

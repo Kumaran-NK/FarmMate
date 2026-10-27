@@ -1,8 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { FarmProvider } from './context/FarmContext';
+import { VoiceProvider } from './context/VoiceContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { VoiceFAB } from './components/VoiceFAB';
 
 import { LandingPage } from './pages/LandingPage';
 import { Dashboard } from './pages/Dashboard';
@@ -14,6 +16,7 @@ import { WaterManagement } from './pages/WaterManagement';
 import { YieldPredictionPage } from './pages/YieldPrediction';
 import { MarketPricesPage } from './pages/MarketPrices';
 import { AIAssistant } from './pages/AIAssistant';
+import { AlertSettings } from './pages/AlertSettings';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -36,10 +39,14 @@ const AppContent: React.FC = () => {
           <Route path="/yield-prediction" element={<YieldPredictionPage />} />
           <Route path="/market-prices" element={<MarketPricesPage />} />
           <Route path="/ai-assistant" element={<AIAssistant />} />
+          <Route path="/alerts" element={<AlertSettings />} />
         </Routes>
       </main>
 
       {!isLanding && <Footer />}
+
+      {/* Global Voice FAB — visible on all pages except landing */}
+      {!isLanding && <VoiceFAB />}
     </div>
   );
 };
@@ -47,9 +54,11 @@ const AppContent: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <FarmProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <VoiceProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </VoiceProvider>
     </FarmProvider>
   );
 };

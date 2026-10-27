@@ -8,6 +8,7 @@ import {
   Tractor,
   TrendingUp,
   Bot,
+  Bell,
   LayoutDashboard,
   MapPin,
   Globe,
@@ -33,23 +34,24 @@ export const Navbar: React.FC = () => {
   const [showLocModal, setShowLocModal] = useState(false);
 
   const navItems = [
-    { path: '/', label: t('dashboard'), icon: LayoutDashboard },
-    { path: '/crop-advisor', label: t('cropAdvisor'), icon: Sprout },
-    { path: '/fertilizer-advisor', label: t('fertilizerAdvisor'), icon: FlaskConical },
-    { path: '/weather', label: t('weather'), icon: Sun },
-    { path: '/water-management', label: t('waterManagement'), icon: Droplets },
-    { path: '/yield-prediction', label: t('yieldPrediction'), icon: Tractor },
-    { path: '/market-prices', label: t('marketPrices'), icon: TrendingUp },
-    { path: '/ai-assistant', label: t('aiAssistant'), icon: Bot }
+    { path: '/', label: t('dashboard'), shortLabel: 'Dashboard', icon: LayoutDashboard },
+    { path: '/crop-advisor', label: t('cropAdvisor'), shortLabel: 'Crop', icon: Sprout },
+    { path: '/fertilizer-advisor', label: t('fertilizerAdvisor'), shortLabel: 'Fertilizer', icon: FlaskConical },
+    { path: '/weather', label: t('weather'), shortLabel: 'Weather', icon: Sun },
+    { path: '/water-management', label: t('waterManagement'), shortLabel: 'Water', icon: Droplets },
+    { path: '/yield-prediction', label: t('yieldPrediction'), shortLabel: 'Yield', icon: Tractor },
+    { path: '/market-prices', label: t('marketPrices'), shortLabel: 'Markets', icon: TrendingUp },
+    { path: '/ai-assistant', label: t('aiAssistant'), shortLabel: 'Assistant', icon: Bot },
+    { path: '/alerts', label: 'Alerts', shortLabel: 'Alerts', icon: Bell }
   ];
 
   return (
     <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-[1536px] w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 gap-2">
           
           {/* Logo & Platform Name */}
-          <NavLink to="/" className="flex items-center space-x-3 group">
+          <NavLink to="/" className="flex items-center space-x-3 group shrink-0">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-900/30 group-hover:scale-105 transition-transform">
               <Sprout className="w-6 h-6 text-white" />
             </div>
@@ -64,7 +66,7 @@ export const Navbar: React.FC = () => {
           </NavLink>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden xl:flex items-center space-x-1">
+          <nav className="hidden xl:flex items-center gap-0.5 2xl:gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -72,41 +74,44 @@ export const Navbar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }: { isActive: boolean }) =>
-                    `flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    `flex items-center space-x-1 px-2 py-1.5 2xl:px-2.5 2xl:py-2 rounded-lg text-[11px] 2xl:text-xs font-medium transition-all whitespace-nowrap ${
                       isActive
                         ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm'
                         : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                     }`
                   }
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
+                  <Icon className="w-3.5 h-3.5 2xl:w-4 2xl:h-4 shrink-0" />
+                  <span className="hidden 2xl:inline">{item.label}</span>
+                  <span className="inline 2xl:hidden">{item.shortLabel}</span>
                 </NavLink>
               );
             })}
           </nav>
 
           {/* Location & Language Selectors */}
-          <div className="hidden sm:flex items-center space-x-3">
+          <div className="hidden sm:flex items-center space-x-2 shrink-0">
             {/* Location Selector Button */}
             <button
               onClick={() => setShowLocModal(true)}
-              className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs text-slate-200 transition-colors"
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs text-slate-200 transition-colors whitespace-nowrap"
             >
-              <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="font-semibold">{location.city}, {location.state}</span>
+              <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="font-semibold">{location.city}</span>
+              <span className="hidden 2xl:inline font-semibold text-slate-400">, {location.state}</span>
             </button>
 
             {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}
-              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-semibold text-emerald-300 transition-colors"
+              className="flex items-center space-x-1 px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-semibold text-emerald-300 transition-colors shrink-0"
               title="Switch Language (English / Tamil)"
             >
               <Globe className="w-3.5 h-3.5" />
               <span>{language === 'en' ? 'ENG' : 'தமிழ்'}</span>
             </button>
           </div>
+
 
           {/* Mobile Menu Button */}
           <div className="xl:hidden flex items-center space-x-2">

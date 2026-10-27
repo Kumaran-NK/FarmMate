@@ -211,12 +211,17 @@ export const api = {
   },
 
   // AI Assistant Chatbot
-  sendChatMessage: async (message: string, history: ChatMessage[], context?: Record<string, any>): Promise<string> => {
+  sendChatMessage: async (message: string, history: ChatMessage[] = [], context?: Record<string, any>): Promise<string> => {
     try {
-      const res = await apiClient.post('/chat', { message, history, context });
+      const res = await apiClient.post('/chat', {
+        message,
+        history: history.slice(-6).map((m) => ({ role: m.role, content: m.content })),
+        context: context || {}
+      });
       return res.data.reply || 'No response received from assistant.';
-    } catch (err) {
-      return 'I am currently operating in offline mode. For urgent advice, please check the specific advisory tabs (Crop, Fertilizer, Weather, Water Management).';
+    } catch (err: any) {
+      console.error('Chat error:', err);
+      return 'I am currently unable to reach the AI server. Please verify your connection or check that the backend is running.';
     }
   },
 
@@ -240,6 +245,67 @@ export const api = {
     document.body.appendChild(link);
     link.click();
     link.remove();
+  },
+
+  // Voice Pipeline — Process voice transcription
+
+
+  processVoice: async (data: {
+    transcription: string;
+    language: string;
+    context?: Record<string, any>;
+  }): Promise<{
+    intent: string;
+    confidence: number;
+    detected_language: string;
+    spoken_response: string;
+    raw_data?: any;
+    params_used?: Record<string, any>;
+  }> => {
+    try {
+      const res = await apiClient.post('/voice/process', data);
+      return res.data;
+    } catch (err) {
+      console.warn('Voice processing API unavailable, returning fallback');
+      return {
+        intent: 'general_chat',
+        confidence: 0.3,
+        detected_language: data.language || 'en',
+        spoken_response: 'I am having trouble processing your voice command right now. Please try using the text chat or the specific tool pages.',
+        raw_data: null,
+        params_used: {},
+      };
+    }
+  },
+
+  // Alerts — Check current farm alerts
+  checkAlerts: async (cityName: string): Promise<{ alerts: any[]; total: number }> => {
+    try {
+      const res = await apiClient.post('/alerts/check', { city_name: cityName, check_frost: true });
+      return res.data;
+    } catch {
+      return { alerts: [], total: 0 };
+    }
+  },
+
+  // Alerts — Get history
+  getAlertHistory: async (): Promise<any[]> => {
+    try {
+      const res = await apiClient.get('/alerts/history');
+      return res.data.alerts || [];
+    } catch {
+      return [];
+    }
+  },
+
+  // RAG — Get stats
+  getRagStats: async (): Promise<any> => {
+    try {
+      const res = await apiClient.get('/rag/stats');
+      return res.data.data;
+    } catch {
+      return { status: 'unavailable' };
+    }
   }
 };
 
