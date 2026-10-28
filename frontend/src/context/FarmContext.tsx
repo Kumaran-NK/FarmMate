@@ -22,6 +22,8 @@ interface FarmContextType {
   latestWeather: WeatherResponse | null;
   setLatestWeather: (weather: WeatherResponse | null) => void;
   weatherCondition: WeatherCondition;
+  darkMode: boolean;
+  setDarkMode: (v: boolean) => void;
   t: (key: string) => string;
 }
 
@@ -98,6 +100,22 @@ export const FarmProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [language, setLanguage] = useState<Language>('en');
   const [latestCropPrediction, setLatestCropPrediction] = useState<CropRecommendation | null>(null);
   const [latestWeather, setLatestWeather] = useState<WeatherResponse | null>(null);
+  const [darkMode, setDarkModeState] = useState<boolean>(() => {
+    try { return localStorage.getItem('farmmate-dark') === 'true'; } catch { return false; }
+  });
+
+  const setDarkMode = (v: boolean) => {
+    setDarkModeState(v);
+    try { localStorage.setItem('farmmate-dark', String(v)); } catch { /* ignore */ }
+    if (v) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  };
+
+  // Apply on first mount
+  React.useEffect(() => {
+    if (darkMode) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  }, []);
 
   const weatherCondition: WeatherCondition = parseWeatherCondition(
     latestWeather?.current_weather.description,
@@ -120,6 +138,8 @@ export const FarmProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         latestWeather,
         setLatestWeather,
         weatherCondition,
+        darkMode,
+        setDarkMode,
         t
       }}
     >

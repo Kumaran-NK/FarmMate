@@ -5,6 +5,7 @@ import { VoiceProvider } from './context/VoiceContext';
 import { Sidebar, TopBar } from './components/Sidebar';
 import { Footer } from './components/Footer';
 import { VoiceFAB } from './components/VoiceFAB';
+import { useFarmContext } from './context/FarmContext';
 
 import { LandingPage } from './pages/LandingPage';
 import { Dashboard } from './pages/Dashboard';
@@ -20,6 +21,7 @@ import { AlertSettings } from './pages/AlertSettings';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
+  const { darkMode } = useFarmContext();
   const isLanding = location.pathname === '/';
 
   if (isLanding) {
@@ -35,7 +37,9 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f5f7f2] text-[#1a2e1a] antialiased selection:bg-green-200 selection:text-green-900">
+    <div className={`flex min-h-screen antialiased selection:bg-green-200 selection:text-green-900 transition-colors duration-300 ${
+      darkMode ? 'bg-gray-950 text-gray-100' : 'bg-[#f5f7f2] text-[#1a2e1a]'
+    }`}>
       {/* Left Sidebar */}
       <Sidebar />
 

@@ -121,81 +121,67 @@ export const WeatherPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Hero Weather Atmosphere Card — Unified overlapping design matching reference */}
-          <div className="relative rounded-3xl overflow-hidden shadow-md border border-gray-100 min-h-[250px] sm:min-h-[270px]">
-            {/* Background Agricultural Image */}
-            <SmartImage
-              src={weatherImg}
-              alt="Weather Sky"
-              fallbackType="weather"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            {/* Smooth dark vignette overlay for legibility */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-black/30" />
+          {/* Hero Weather Card */}
+          <div className="relative rounded-3xl overflow-hidden shadow-lg border border-gray-100 h-[300px] sm:h-[320px]">
+            {/* Layer 1: background image (own absolute layer so it always fills the card) */}
+            <div className="absolute inset-0">
+              <SmartImage
+                src={weatherImg}
+                alt="Weather Sky"
+                fallbackType="weather"
+                className="w-full h-full"
+              />
+            </div>
 
-            {/* Overlapping Content Container */}
-            <div className="relative z-10 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 h-full">
-              {/* Left Side: Location, Temperature & Condition */}
-              <div className="text-white">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-white/95">
-                  <MapPin className="w-4 h-4 text-emerald-400" />
-                  <span>{location.city}, {location.state}</span>
-                </div>
-                <p className="text-[11px] text-white/70 mt-0.5">
-                  Updated {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                </p>
+            {/* Layer 2: legibility gradients */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 
-                <div className="flex items-center gap-3.5 mt-4">
-                  {isNight ? (
-                    <Moon className="w-12 sm:w-14 h-12 sm:h-14 text-indigo-200 drop-shadow-lg" />
-                  ) : (
-                    <Sun className="w-12 sm:w-14 h-12 sm:h-14 text-amber-400 drop-shadow-lg" />
-                  )}
-                  <div className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-md">
-                    {curr?.temp || 28}°C
-                  </div>
-                </div>
+            {/* Layer 3: content */}
+            <div className="relative z-10 h-full p-6 sm:p-8 flex flex-col justify-end text-white">
+              <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold">
+                <MapPin className="w-4 h-4 text-emerald-400" />
+                <span>{location.city}, {location.state}</span>
+              </div>
+              <p className="text-[11px] text-white/70 mt-0.5">
+                Updated {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              </p>
 
-                <div className="text-sm sm:text-base font-semibold text-white/95 capitalize mt-2 drop-shadow flex items-center gap-2">
-                  <span>{curr?.description || 'Clear Sky'}</span>
-                  <span className="text-white/40">•</span>
-                  <span className="text-emerald-300 font-medium">good for field work</span>
+              <div className="flex items-center gap-3 mt-2.5">
+                {isNight ? (
+                  <Moon className="w-11 sm:w-12 h-11 sm:h-12 text-indigo-200 drop-shadow-lg" />
+                ) : (
+                  <Sun className="w-11 sm:w-12 h-11 sm:h-12 text-amber-400 drop-shadow-lg" />
+                )}
+                <div className="text-4xl sm:text-5xl font-black tracking-tight drop-shadow-md">
+                  {curr?.temp || 28}°C
                 </div>
               </div>
 
-              {/* Right Side: Frosted Glass Overlapping Stats Card */}
-              <div className="bg-white/85 backdrop-blur-md rounded-2xl p-4.5 sm:p-5 border border-white/50 shadow-xl min-w-[250px] sm:min-w-[270px] space-y-3 text-gray-800">
-                <div className="flex items-center justify-between text-xs pb-2 border-b border-gray-200/50">
-                  <div className="flex items-center gap-2 font-medium text-gray-600">
-                    <Droplets className="w-4 h-4 text-blue-500" />
-                    <span>Humidity</span>
-                  </div>
-                  <span className="font-extrabold text-sm text-gray-900">{curr?.humidity || 68}%</span>
-                </div>
+              <div className="text-sm sm:text-base font-semibold capitalize mt-1.5 drop-shadow flex items-center gap-2">
+                <span>{curr?.description || 'Clear Sky'}</span>
+                <span className="text-white/40">•</span>
+                <span className="text-emerald-300 font-medium">good for field work</span>
+              </div>
 
-                <div className="flex items-center justify-between text-xs pb-2 border-b border-gray-200/50">
-                  <div className="flex items-center gap-2 font-medium text-gray-600">
-                    <Wind className="w-4 h-4 text-sky-500" />
-                    <span>Wind Speed</span>
-                  </div>
-                  <span className="font-extrabold text-sm text-gray-900">{curr?.wind_speed || 3.4} m/s</span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs pb-2 border-b border-gray-200/50">
-                  <div className="flex items-center gap-2 font-medium text-gray-600">
-                    <Gauge className="w-4 h-4 text-indigo-500" />
-                    <span>Pressure</span>
-                  </div>
-                  <span className="font-extrabold text-sm text-gray-900">{curr?.pressure || 1005} hPa</span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 font-medium text-gray-600">
-                    <CloudRain className="w-4 h-4 text-cyan-500" />
-                    <span>Rain Chance</span>
-                  </div>
-                  <span className="font-extrabold text-sm text-gray-900">{((rain?.probability || 0.1) * 100).toFixed(0)}%</span>
-                </div>
+              {/* Stats row */}
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3.5 pt-3 border-t border-white/25 text-xs text-white/85">
+                <span className="flex items-center gap-1.5">
+                  <CloudRain className="w-4 h-4 text-cyan-300" />
+                  Rain {((rain?.probability || 0.1) * 100).toFixed(0)}%
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Droplets className="w-4 h-4" />
+                  {curr?.humidity || 68}%
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Wind className="w-4 h-4" />
+                  {curr?.wind_speed || 3.4} m/s
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Gauge className="w-4 h-4" />
+                  {curr?.pressure || 1012} hPa
+                </span>
               </div>
             </div>
           </div>
@@ -235,7 +221,7 @@ export const WeatherPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Tab 1: Hourly Forecast + Weather Advisory (Matching Reference Panel 5) */}
+            {/* Tab 1: Hourly Forecast + Weather Advisory */}
             {activeTab === 'hourly' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
                 {/* Hourly items (7 cols) */}
@@ -389,7 +375,7 @@ export const WeatherPage: React.FC = () => {
               <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Short-Term Hourly Outlook</h3>
               <span className="text-xs text-gray-400">Temperature (°C) & Humidity (%)</span>
             </div>
-            
+
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
