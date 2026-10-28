@@ -9,7 +9,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from farmmate.config import settings
-from farmmate.utils.weather_api import fetch_current_weather
+from farmmate.utils.weather_api import fetch_current_weather, fetch_weather_by_coords
 
 class WeatherForecastService:
     """Service for predicting rain probability and LSTM hourly temperature/humidity forecasts."""
@@ -49,15 +49,33 @@ class WeatherForecastService:
             print(f"Warning: Could not load weather models: {e}")
             return False
 
-    def predict_weather(self, city_name: str, api_key: Optional[str] = None) -> Dict[str, Any]:
+    def predict_weather(self, city_name: str, api_key: Optional[str] = None, lat: Optional[float] = None, lon: Optional[float] = None) -> Dict[str, Any]:
         """Fetch current weather and generate future predictions."""
         self.load_artifacts()
         
-        weather = fetch_current_weather(city_name, api_key)
+        # Geolocation lookup if coordinates are supplied or city_name contains coords
+        weather = None
+        if lat is not None and lon is not None:
+            weather = fetch_weather_by_coords(lat, lon, api_key)
+        elif city_name and ("custom pin" in city_name.lower() or "plot" in city_name.lower() or "(" in city_name):
+            try:
+                import re
+                m = re.search(r"(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)", city_name)
+                if m:
+                    ex_lat = float(m.group(1))
+                    ex_lon = float(m.group(2))
+                    weather = fetch_weather_by_coords(ex_lat, ex_lon, api_key)
+            except Exception:
+                pass
+
+        if weather is None or "error" in weather:
+            weather = fetch_current_weather(city_name, api_key)
+
         if "error" in weather:
             # Fallback mock weather for display
             weather = {
-                "city": city_name, "country": "IN", "lat": 13.08, "lon": 80.27,
+                "city": city_name or "Custom Farm Plot", "country": "IN",
+                "lat": lat if lat is not None else 13.08, "lon": lon if lon is not None else 80.27,
                 "temp": 28.5, "feels_like": 30.0, "temp_min": 26.0, "temp_max": 31.0,
                 "humidity": 75, "pressure": 1012, "wind_speed": 4.5, "wind_dir": 120,
                 "description": "partly cloudy", "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")

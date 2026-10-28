@@ -113,12 +113,15 @@ async def predict_market_price(req: MarketPredictRequest) -> Dict[str, Any]:
 @router.post("/weather/predict")
 async def predict_weather(req: WeatherPredictRequest) -> Dict[str, Any]:
     try:
-        cache_key = f"weather:{req.city_name.lower().strip()}"
+        if req.lat is not None and req.lon is not None:
+            cache_key = f"weather:coords:{round(req.lat, 3)}:{round(req.lon, 3)}"
+        else:
+            cache_key = f"weather:{req.city_name.lower().strip()}"
         cached = await cache_manager.get_json(cache_key)
         if cached:
             return {"status": "success", "data": cached, "cached": True}
 
-        result = weather_service.predict_weather(city_name=req.city_name)
+        result = weather_service.predict_weather(city_name=req.city_name, lat=req.lat, lon=req.lon)
         await cache_manager.set_json(cache_key, result, ttl_seconds=900)
         return {"status": "success", "data": result, "cached": False}
     except Exception as e:

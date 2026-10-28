@@ -121,17 +121,22 @@ export const api = {
   },
 
   // Weather Telemetry & Rain AI
-  predictWeather: async (cityName: string): Promise<WeatherResponse> => {
+  predictWeather: async (cityName: string, lat?: number, lon?: number): Promise<WeatherResponse> => {
     try {
-      const res = await apiClient.post('/weather/predict', { city_name: cityName });
+      const payload: { city_name: string; lat?: number; lon?: number } = { city_name: cityName };
+      if (lat !== undefined && lon !== undefined) {
+        payload.lat = lat;
+        payload.lon = lon;
+      }
+      const res = await apiClient.post('/weather/predict', payload);
       return res.data.data;
     } catch (err) {
       return {
         current_weather: {
           city: cityName,
           country: 'IN',
-          lat: 13.08,
-          lon: 80.27,
+          lat: lat ?? 13.08,
+          lon: lon ?? 80.27,
           temp: 29.5,
           feels_like: 32.0,
           temp_min: 25.0,

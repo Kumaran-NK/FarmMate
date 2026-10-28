@@ -21,47 +21,47 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   const getFallbackIcon = () => {
     switch (fallbackType) {
       case 'crop':
-        return <Sprout className="w-10 h-10 text-emerald-400 animate-pulse" />;
+        return <Sprout className="w-8 h-8 text-emerald-600 animate-pulse" />;
       case 'fertilizer':
-        return <FlaskConical className="w-10 h-10 text-teal-400 animate-pulse" />;
+        return <FlaskConical className="w-8 h-8 text-teal-600 animate-pulse" />;
       case 'weather':
-        return <SunMedium className="w-10 h-10 text-amber-400 animate-pulse" />;
+        return <SunMedium className="w-8 h-8 text-amber-500 animate-pulse" />;
       case 'market':
-        return <TrendingUp className="w-10 h-10 text-blue-400 animate-pulse" />;
+        return <TrendingUp className="w-8 h-8 text-blue-600 animate-pulse" />;
       default:
-        return <Leaf className="w-10 h-10 text-emerald-400 animate-pulse" />;
+        return <Leaf className="w-8 h-8 text-emerald-600 animate-pulse" />;
     }
   };
 
   const getFallbackGradient = () => {
     switch (fallbackType) {
       case 'crop':
-        return 'from-emerald-950/80 via-emerald-900/60 to-slate-900';
+        return 'from-emerald-50 via-green-50 to-emerald-100/50';
       case 'fertilizer':
-        return 'from-teal-950/80 via-teal-900/60 to-slate-900';
+        return 'from-teal-50 via-cyan-50 to-teal-100/50';
       case 'weather':
-        return 'from-amber-950/80 via-amber-900/60 to-slate-900';
+        return 'from-amber-50 via-orange-50 to-amber-100/50';
       case 'market':
-        return 'from-blue-950/80 via-blue-900/60 to-slate-900';
+        return 'from-blue-50 via-indigo-50 to-blue-100/50';
       default:
-        return 'from-slate-900 via-slate-800 to-slate-900';
+        return 'from-gray-50 via-slate-50 to-gray-100';
     }
   };
 
   return (
-    <div className={`relative overflow-hidden bg-slate-900 ${className}`}>
+    <div className={`relative overflow-hidden bg-gray-100 ${className}`}>
       {/* Loading Skeleton / Fallback Card when image fails or hasn't loaded */}
       {(error || !loaded) && (
         <div
-          className={`absolute inset-0 flex flex-col items-center justify-center p-4 bg-gradient-to-br ${getFallbackGradient()} border border-slate-800 rounded-inherit transition-opacity duration-300`}
+          className={`absolute inset-0 flex flex-col items-center justify-center p-3 bg-gradient-to-br ${getFallbackGradient()} border border-gray-200/60 rounded-inherit transition-opacity duration-300`}
         >
-          <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-700/60 shadow-lg mb-2">
+          <div className="p-2.5 rounded-xl bg-white border border-gray-200 shadow-2xs mb-1.5">
             {getFallbackIcon()}
           </div>
-          <span className="text-xs font-semibold text-slate-300 text-center px-2 line-clamp-1">
+          <span className="text-xs font-semibold text-gray-700 text-center px-2 line-clamp-1">
             {alt}
           </span>
-          <span className="text-[10px] text-slate-500 mt-0.5">FarmMate Visual</span>
+          <span className="text-[10px] text-gray-400 mt-0.5">FarmMate Agronomic Visual</span>
         </div>
       )}
 

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { FlaskConical, Sparkles, CheckCircle2, Info } from 'lucide-react';
+import { FlaskConical, Sparkles, CheckCircle2, Beaker, ShieldAlert } from 'lucide-react';
 import { api } from '../services/api';
 import type { FertilizerRecommendation } from '../types';
+import { SmartImage } from '../components/SmartImage';
+import { getFertilizerImage } from '../services/imageMap';
 
 export const FertilizerAdvisor: React.FC = () => {
   const [cropType, setCropType] = useState<string>('Wheat');
@@ -43,34 +45,35 @@ export const FertilizerAdvisor: React.FC = () => {
     }
   };
 
+  const fertImg = result ? getFertilizerImage(result.recommended_fertilizer) : '';
+
   return (
-    <div className="space-y-8 pb-12 max-w-6xl mx-auto">
-      
+    <div className="space-y-6 pb-12 max-w-7xl mx-auto">
       {/* Header */}
-      <div>
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-xs font-bold mb-2">
-          <FlaskConical className="w-3.5 h-3.5" />
-          <span>Fertilizer Advisory System</span>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-white p-6 rounded-2xl border border-green-100 shadow-sm">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold mb-2">
+            <FlaskConical className="w-3.5 h-3.5" />
+            <span>Nutrient Deficit & Dosage Advisor</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Fertilizer Guide</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Calculate precise fertilizer formulations based on active crop demands, soil pH, and soil moisture.
+          </p>
         </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Fertilizer Guide</h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Identify soil nutrient deficiencies and receive exact dosage guidelines with agronomic safety overrides.
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Form Inputs (5 cols) */}
-        <div className="lg:col-span-5 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-md space-y-5">
+        <div className="lg:col-span-5 bg-white border border-green-100 rounded-2xl p-6 shadow-sm space-y-5">
           <form onSubmit={handleRecommend} className="space-y-4">
-            
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Crop Type</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Cultivated Crop</label>
                 <select
                   value={cropType}
                   onChange={(e) => setCropType(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 >
                   {['Wheat', 'Rice', 'Maize', 'Barley', 'Millet', 'Sugarcane', 'Cotton', 'Tea', 'Coffee', 'Apple', 'Banana', 'Mango'].map((c) => (
                     <option key={c} value={c}>{c}</option>
@@ -79,11 +82,11 @@ export const FertilizerAdvisor: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Soil Type</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Soil Type</label>
                 <select
                   value={soilType}
                   onChange={(e) => setSoilType(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 >
                   {['Loamy Soil', 'Sandy Soil', 'Neutral Soil', 'Clay Soil', 'Acidic Soil', 'Alkaline Soil'].map((s) => (
                     <option key={s} value={s}>{s}</option>
@@ -92,48 +95,51 @@ export const FertilizerAdvisor: React.FC = () => {
               </div>
             </div>
 
-            <div className="border-t border-slate-800 pt-3">
-              <h4 className="text-xs font-bold text-teal-400 uppercase tracking-wider mb-2">🧪 Current Soil Nutrients</h4>
-              
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1">Nitrogen (N)</label>
+            <div className="border-t border-gray-100 pt-3">
+              <h4 className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Beaker className="w-3.5 h-3.5 text-teal-600" />
+                Current Soil Nutrients (kg/ha or ppm)
+              </h4>
+
+              <div className="grid grid-cols-3 gap-2.5">
+                <div className="bg-emerald-50/40 p-2.5 rounded-xl border border-emerald-100">
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Nitrogen (N)</label>
                   <input
                     type="number"
                     step="any"
                     value={n}
                     onChange={(e) => setN(Number(e.target.value))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1">Phosphorus (P)</label>
+                <div className="bg-emerald-50/40 p-2.5 rounded-xl border border-emerald-100">
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Phosphorus (P)</label>
                   <input
                     type="number"
                     step="any"
                     value={p}
                     onChange={(e) => setP(Number(e.target.value))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1">Potassium (K)</label>
+                <div className="bg-emerald-50/40 p-2.5 rounded-xl border border-emerald-100">
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Potassium (K)</label>
                   <input
                     type="number"
                     step="any"
                     value={k}
                     onChange={(e) => setK(Number(e.target.value))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                    className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-slate-800 pt-3 space-y-3">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-semibold">Soil pH</span>
-                  <span className="font-mono text-amber-400 font-bold">{ph}</span>
+            <div className="border-t border-gray-100 pt-3 space-y-4">
+              <div className="bg-amber-50/40 p-3 rounded-xl border border-amber-100">
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-gray-700 font-semibold">Soil pH</span>
+                  <span className="font-mono px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">{ph}</span>
                 </div>
                 <input
                   type="range"
@@ -142,14 +148,14 @@ export const FertilizerAdvisor: React.FC = () => {
                   step="0.1"
                   value={ph}
                   onChange={(e) => setPh(Number(e.target.value))}
-                  className="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg"
+                  className="w-full accent-amber-600 cursor-pointer"
                 />
               </div>
 
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-semibold">Soil Moisture (%)</span>
-                  <span className="font-mono text-cyan-400 font-bold">{moisture} %</span>
+              <div className="bg-cyan-50/40 p-3 rounded-xl border border-cyan-100">
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-gray-700 font-semibold">Soil Moisture (%)</span>
+                  <span className="font-mono px-2 py-0.5 rounded bg-cyan-100 text-cyan-800 font-bold">{moisture} %</span>
                 </div>
                 <input
                   type="range"
@@ -157,7 +163,7 @@ export const FertilizerAdvisor: React.FC = () => {
                   max="90"
                   value={moisture}
                   onChange={(e) => setMoisture(Number(e.target.value))}
-                  className="w-full accent-cyan-500 bg-slate-800 h-2 rounded-lg"
+                  className="w-full accent-cyan-600 cursor-pointer"
                 />
               </div>
             </div>
@@ -165,18 +171,17 @@ export const FertilizerAdvisor: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-500 hover:from-teal-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2"
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-700 hover:from-teal-700 hover:to-emerald-800 text-white font-bold text-sm shadow-md shadow-teal-700/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
             >
               {loading ? (
-                <span>Evaluating Fertilizer Model...</span>
+                <span>Evaluating Fertilizer Recommendation Model...</span>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Recommend Fertilizer</span>
+                  <span>Recommend Fertilizer Formulation</span>
                 </>
               )}
             </button>
-
           </form>
         </div>
 
@@ -184,59 +189,68 @@ export const FertilizerAdvisor: React.FC = () => {
         <div className="lg:col-span-7 space-y-6">
           {result ? (
             <div className="space-y-4">
-              
-              <div className="p-6 rounded-3xl bg-slate-900/90 border border-teal-500/40 shadow-2xl backdrop-blur-md space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <span className="px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[11px] font-bold">
-                    🤖 {result.source}
+              <div className="p-6 rounded-2xl bg-white border border-teal-200 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <span className="px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-[11px] font-bold">
+                    🤖 {result.source || 'Agronomic Classifier'}
                   </span>
-                  <span className="text-xs text-slate-400">
-                    Confidence: <b className="text-emerald-400">{(result.confidence * 100).toFixed(0)}%</b>
+                  <span className="text-xs text-gray-500">
+                    Confidence: <b className="text-teal-700 font-bold">{(result.confidence * 100).toFixed(0)}%</b>
                   </span>
                 </div>
 
-                <div>
-                  <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Recommended Fertilizer</span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white mt-1 flex items-center gap-2">
-                    🧪 {result.recommended_fertilizer}
-                  </h2>
+                <div className="flex flex-col sm:flex-row gap-5 items-center">
+                  <div className="w-full sm:w-44 h-36 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                    <SmartImage
+                      src={fertImg}
+                      alt={result.recommended_fertilizer}
+                      fallbackType="fertilizer"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="space-y-1 w-full">
+                    <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Recommended Fertilizer</span>
+                    <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mt-0.5">
+                      {result.recommended_fertilizer}
+                    </h2>
+                    <p className="text-xs text-gray-500">
+                      Specifically tailored to rebalance nutrient equilibrium for {cropType} on {soilType}.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-teal-950/30 border border-teal-500/20 text-xs text-slate-200 leading-relaxed">
-                  <div className="font-bold text-teal-300 mb-1 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4" />
+                <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-900 leading-relaxed">
+                  <div className="font-bold text-teal-800 mb-1 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-teal-600" />
                     <span>Agronomic Diagnosis</span>
                   </div>
                   {result.explanation || result.advice}
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-xs text-slate-300 space-y-2">
-                  <h4 className="font-bold text-white flex items-center gap-1.5">
-                    <Info className="w-4 h-4 text-emerald-400" />
-                    <span>Application Guidance & Dosage Notice</span>
+                <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200 text-xs text-gray-700 space-y-2">
+                  <h4 className="font-bold text-amber-900 flex items-center gap-1.5">
+                    <ShieldAlert className="w-4 h-4 text-amber-600" />
+                    <span>Application Safety & Dosage Notice</span>
                   </h4>
-                  <p className="leading-relaxed text-slate-400">
-                    Always apply chemical fertilizers based on soil moisture availability and localized agricultural officer guidance. Avoid over-application to prevent nutrient runoff and soil acidification.
+                  <p className="leading-relaxed text-gray-600">
+                    Always apply chemical fertilizers when soil moisture is adequate. Over-application can cause root burn, fertilizer runoff, or groundwater nitrate buildup.
                   </p>
                 </div>
               </div>
-
             </div>
           ) : (
-            <div className="p-12 rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center mx-auto">
-                <FlaskConical className="w-6 h-6" />
+            <div className="p-12 rounded-2xl bg-white border border-dashed border-gray-200 text-center space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto">
+                <FlaskConical className="w-7 h-7" />
               </div>
-              <h3 className="text-base font-bold text-white">Fertilizer Diagnosis Ready</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                Set your crop type, soil pH, and NPK levels on the left to receive a custom fertilizer recommendation.
+              <h3 className="text-base font-bold text-gray-800">Fertilizer Diagnosis Ready</h3>
+              <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+                Set your target crop, soil type, and nutrient levels on the left to obtain tailored fertilizer guidance.
               </p>
             </div>
           )}
         </div>
-
       </div>
-
     </div>
   );
 };

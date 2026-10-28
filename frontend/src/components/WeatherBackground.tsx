@@ -1,6 +1,15 @@
 import React from 'react';
-import { FarmScene } from './FarmScene';
 import { useFarmContext } from '../context/FarmContext';
+
+// Map weather conditions to agriculture images
+const WEATHER_IMAGES: Record<string, string> = {
+  sunny: '/Agriculture images/Suuny.png',
+  cloudy: '/Agriculture images/Cloudy.png',
+  rain: '/Agriculture images/Rainy.png',
+  storm: '/Agriculture images/thunderstorm.png',
+  fog: '/Agriculture images/Cloudy.png',
+  frost: '/Agriculture images/Late Night.png',
+};
 
 interface WeatherBackgroundProps {
   children?: React.ReactNode;
@@ -12,22 +21,21 @@ export const WeatherBackground: React.FC<WeatherBackgroundProps> = ({
   heightClass = 'min-h-[280px]',
 }) => {
   const { weatherCondition } = useFarmContext();
+  const bgImage = WEATHER_IMAGES[weatherCondition] || WEATHER_IMAGES.sunny;
 
   return (
-    <div className={`relative overflow-hidden rounded-3xl border border-slate-800 shadow-2xl ${heightClass} transition-all duration-700`}>
-      {/* 2D Animated Farm Scene */}
-      <FarmScene weatherState={weatherCondition} />
+    <div className={`relative overflow-hidden rounded-2xl shadow-lg ${heightClass} transition-all duration-700`}>
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
+        style={{ backgroundImage: `url("${bgImage}")` }}
+      />
 
-      {/* Subtle Fog / Frost Ambient Overlay */}
-      {weatherCondition === 'fog' && (
-        <div className="absolute inset-0 bg-slate-400/15 backdrop-blur-[2px] pointer-events-none" />
-      )}
-      {weatherCondition === 'frost' && (
-        <div className="absolute inset-0 bg-cyan-500/10 pointer-events-none" />
-      )}
+      {/* Gradient overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
 
-      {/* Content Container layered above the animation */}
-      <div className="relative z-20 h-full p-6 sm:p-8 flex flex-col justify-between">
+      {/* Content Container layered above the background */}
+      <div className="relative z-10 h-full p-6 sm:p-8 flex flex-col justify-between">
         {children}
       </div>
     </div>

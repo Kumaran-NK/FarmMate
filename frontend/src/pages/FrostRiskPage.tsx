@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Snowflake, ShieldCheck } from 'lucide-react';
+import { Snowflake, ShieldCheck, Thermometer, Wind, Cloud, Droplets, AlertTriangle } from 'lucide-react';
 import { api } from '../services/api';
 import type { FrostRiskResponse } from '../types';
 
@@ -41,33 +41,39 @@ export const FrostRiskPage: React.FC = () => {
     }
   };
 
+  const getRiskColor = (level?: string) => {
+    const l = (level || '').toLowerCase();
+    if (l.includes('high') || l.includes('severe')) return 'bg-red-50 text-red-700 border-red-200';
+    if (l.includes('medium') || l.includes('moderate')) return 'bg-amber-50 text-amber-700 border-amber-200';
+    return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  };
+
   return (
-    <div className="space-y-8 pb-12 max-w-6xl mx-auto">
-      
+    <div className="space-y-6 pb-12 max-w-7xl mx-auto">
       {/* Header */}
-      <div>
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-bold mb-2">
-          <Snowflake className="w-3.5 h-3.5" />
-          <span>Cold Wave & Frost Hazard Intelligence</span>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-white p-6 rounded-2xl border border-green-100 shadow-sm">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold mb-2">
+            <Snowflake className="w-3.5 h-3.5" />
+            <span>Thermal Inversion & Cold Wave Alarm</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Frost Risk Intelligence</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Detect freeze injury conditions for cold-sensitive crops using localized XGBoost dew point modeling.
+          </p>
         </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Indian Agricultural Frost Risk Alarm</h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Predict localized frost hazards for cold-sensitive Indian crops using a trained XGBoost classification model.
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Form Inputs (5 cols) */}
-        <div className="lg:col-span-5 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-md space-y-5">
+        <div className="lg:col-span-5 bg-white border border-green-100 rounded-2xl p-6 shadow-sm space-y-4">
           <form onSubmit={handleEvaluate} className="space-y-4">
-            
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Select Region / City</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Target Agricultural Region / City</label>
               <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-semibold"
               >
                 {INDIAN_CITIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -75,11 +81,14 @@ export const FrostRiskPage: React.FC = () => {
               </select>
             </div>
 
-            <div className="border-t border-slate-800 pt-3 space-y-3">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-semibold">Ambient Temperature (°C)</span>
-                  <span className="font-mono text-rose-400 font-bold">{temp} °C</span>
+            <div className="border-t border-gray-100 pt-3 space-y-4">
+              <div className="bg-blue-50/40 p-3 rounded-xl border border-blue-100">
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-gray-700 font-semibold flex items-center gap-1.5">
+                    <Thermometer className="w-3.5 h-3.5 text-blue-600" />
+                    Ambient Temperature (°C)
+                  </span>
+                  <span className="font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold">{temp} °C</span>
                 </div>
                 <input
                   type="range"
@@ -88,14 +97,17 @@ export const FrostRiskPage: React.FC = () => {
                   step="0.5"
                   value={temp}
                   onChange={(e) => setTemp(Number(e.target.value))}
-                  className="w-full accent-rose-500 bg-slate-800 h-2 rounded-lg"
+                  className="w-full accent-blue-600 cursor-pointer"
                 />
               </div>
 
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-semibold">Relative Humidity (%)</span>
-                  <span className="font-mono text-cyan-400 font-bold">{humidity} %</span>
+              <div className="bg-cyan-50/40 p-3 rounded-xl border border-cyan-100">
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-gray-700 font-semibold flex items-center gap-1.5">
+                    <Droplets className="w-3.5 h-3.5 text-cyan-600" />
+                    Relative Humidity (%)
+                  </span>
+                  <span className="font-mono px-2 py-0.5 rounded bg-cyan-100 text-cyan-800 font-bold">{humidity} %</span>
                 </div>
                 <input
                   type="range"
@@ -103,14 +115,17 @@ export const FrostRiskPage: React.FC = () => {
                   max="100"
                   value={humidity}
                   onChange={(e) => setHumidity(Number(e.target.value))}
-                  className="w-full accent-cyan-500 bg-slate-800 h-2 rounded-lg"
+                  className="w-full accent-cyan-600 cursor-pointer"
                 />
               </div>
 
               <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-semibold">Wind Speed (m/s)</span>
-                  <span className="font-mono text-purple-400 font-bold">{windSpeed} m/s</span>
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-gray-700 font-semibold flex items-center gap-1.5">
+                    <Wind className="w-3.5 h-3.5 text-gray-500" />
+                    Wind Velocity (m/s)
+                  </span>
+                  <span className="font-mono px-2 py-0.5 rounded bg-gray-100 text-gray-800 font-bold">{windSpeed} m/s</span>
                 </div>
                 <input
                   type="range"
@@ -119,14 +134,18 @@ export const FrostRiskPage: React.FC = () => {
                   step="0.5"
                   value={windSpeed}
                   onChange={(e) => setWindSpeed(Number(e.target.value))}
-                  className="w-full accent-purple-500 bg-slate-800 h-2 rounded-lg"
+                  className="w-full accent-emerald-600 cursor-pointer"
                 />
+                <p className="text-[11px] text-gray-500 mt-1">Calm winds (&lt;2 m/s) significantly elevate radiation frost risk.</p>
               </div>
 
               <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-semibold">Cloud Cover (%)</span>
-                  <span className="font-mono text-slate-300 font-bold">{cloudCover} %</span>
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-gray-700 font-semibold flex items-center gap-1.5">
+                    <Cloud className="w-3.5 h-3.5 text-gray-500" />
+                    Cloud Cover (%)
+                  </span>
+                  <span className="font-mono px-2 py-0.5 rounded bg-gray-100 text-gray-800 font-bold">{cloudCover} %</span>
                 </div>
                 <input
                   type="range"
@@ -135,77 +154,88 @@ export const FrostRiskPage: React.FC = () => {
                   step="5"
                   value={cloudCover}
                   onChange={(e) => setCloudCover(Number(e.target.value))}
-                  className="w-full accent-slate-400 bg-slate-800 h-2 rounded-lg"
+                  className="w-full accent-gray-600 cursor-pointer"
                 />
+                <p className="text-[11px] text-gray-500 mt-1">Clear night skies cause rapid terrestrial heat loss.</p>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2"
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold text-sm shadow-md shadow-blue-700/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
             >
               {loading ? (
-                <span>Evaluating XGBoost Frost Model...</span>
+                <span>Running XGBoost Frost Inversion Model...</span>
               ) : (
                 <>
                   <Snowflake className="w-4 h-4" />
-                  <span>Evaluate Frost Risk</span>
+                  <span>Evaluate Frost Hazard</span>
                 </>
               )}
             </button>
-
           </form>
         </div>
 
         {/* Results Column (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {result ? (
-            <div className="p-6 rounded-3xl bg-slate-900/90 border border-rose-500/40 shadow-2xl backdrop-blur-md space-y-4">
-              
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-bold">
-                  🤖 Trained XGBoost Model
+            <div className="p-6 rounded-2xl bg-white border border-blue-200 shadow-sm space-y-5">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 text-[11px] font-bold">
+                  🤖 XGBoost Frost Classifier
                 </span>
-                <span className="text-xs text-slate-400">
-                  Calculated Dew Point: <b className="text-cyan-400">{result.dew_point} °C</b>
+                <span className="text-xs text-gray-500">
+                  Calculated Dew Point: <b className="text-blue-900 font-bold">{result.dew_point} °C</b>
                 </span>
               </div>
 
-              <div>
-                <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Evaluated Risk Level</span>
-                <h2 className="text-2xl font-black text-white mt-1">
-                  {result.risk_level}
-                </h2>
-                <div className="text-xs text-slate-400 mt-1">
-                  Model Frost Probability: <b className="text-rose-400 font-mono">{(result.frost_probability * 100).toFixed(1)}%</b>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 rounded-xl bg-gray-50 border border-gray-200">
+                <div>
+                  <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Evaluated Hazard Status</span>
+                  <div className="text-2xl font-black text-gray-900 mt-1 flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-lg border text-sm font-bold ${getRiskColor(result.risk_level)}`}>
+                      {result.risk_level}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-left sm:text-right">
+                  <div className="text-xs text-gray-500">Frost Probability</div>
+                  <div className="text-2xl font-black text-blue-900 font-mono">
+                    {(result.frost_probability * 100).toFixed(1)}%
+                  </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-rose-950/30 border border-rose-500/20 text-xs text-rose-200 leading-relaxed">
-                <div className="font-bold text-rose-300 mb-1 flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Precautionary Advisory & Actions</span>
+              <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-xs text-gray-800 leading-relaxed space-y-1.5">
+                <div className="font-bold text-blue-900 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-blue-600" />
+                  <span>Precautionary Advisory & Horticultural Actions</span>
                 </div>
-                {result.recommended_action || result.advisory}
+                <p>{result.recommended_action || result.advisory}</p>
               </div>
 
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p>
+                  Cold wave conditions impact sensitive horticultural crops (e.g., tomatoes, papaya, tea flush). Deploy micro-sprinklers or mulching covers before midnight if risk is Moderate or High.
+                </p>
+              </div>
             </div>
           ) : (
-            <div className="p-12 rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">
-                <Snowflake className="w-6 h-6" />
+            <div className="p-12 rounded-2xl bg-white border border-dashed border-gray-200 text-center space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                <Snowflake className="w-7 h-7" />
               </div>
-              <h3 className="text-base font-bold text-white">Frost Evaluation Ready</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                Select your city and ambient telemetry on the left, then click <b>Evaluate Frost Risk</b>.
+              <h3 className="text-base font-bold text-gray-800">Frost Evaluation Ready</h3>
+              <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+                Select your region and enter local nocturnal temperature and humidity values to compute freeze probability.
               </p>
             </div>
           )}
         </div>
-
       </div>
-
     </div>
   );
 };

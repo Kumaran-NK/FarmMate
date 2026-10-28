@@ -62,7 +62,7 @@ def fetch_weather_by_coords(lat: float, lon: float, api_key: Optional[str] = Non
         response.raise_for_status()
         data = response.json()
         return {
-            "city": data.get("name", f"Location ({lat:.2f}, {lon:.2f})"),
+            "city": data.get("name") or f"Location ({lat:.2f}, {lon:.2f})",
             "country": data.get("sys", {}).get("country", ""),
             "lat": lat,
             "lon": lon,
@@ -73,8 +73,10 @@ def fetch_weather_by_coords(lat: float, lon: float, api_key: Optional[str] = Non
             "humidity": data.get("main", {}).get("humidity", 60),
             "pressure": data.get("main", {}).get("pressure", 1013),
             "wind_speed": data.get("wind", {}).get("speed", 3.0),
+            "wind_dir": data.get("wind", {}).get("deg", 0),
             "clouds": data.get("clouds", {}).get("all", 20),
-            "description": data.get("weather", [{}])[0].get("description", "clear sky")
+            "description": data.get("weather", [{}])[0].get("description", "clear sky"),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     except Exception as e:
         return {"error": f"Failed to fetch weather for coordinates ({lat}, {lon}): {str(e)}"}

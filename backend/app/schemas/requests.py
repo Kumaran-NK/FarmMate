@@ -56,6 +56,8 @@ class MarketPredictRequest(BaseModel):
 # Weather Request Schema
 class WeatherPredictRequest(BaseModel):
     city_name: str = Field(default="Chennai", description="City name for weather lookup")
+    lat: Optional[float] = Field(default=None, description="Optional latitude for coordinates lookup")
+    lon: Optional[float] = Field(default=None, description="Optional longitude for coordinates lookup")
 
 # Frost Request Schema
 class FrostPredictRequest(BaseModel):
